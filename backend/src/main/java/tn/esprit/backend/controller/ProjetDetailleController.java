@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/projet-detaille")
 @AllArgsConstructor
-@CrossOrigin("*")
 public class ProjetDetailleController {
 
     IProjetDetailleService projetDetailleService;
