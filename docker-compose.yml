@@ -1,0 +1,50 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: gestion-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gestion_db
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - gestion-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    image: gestion-backend:1.0
+    container_name: gestion-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/gestion_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - gestion-net
+
+  frontend:
+    build: ./frontend
+    image: gestion-frontend:1.0
+    container_name: gestion-frontend
+    ports:
+      - "8083:80"
+    depends_on:
+      - backend
+    networks:
+      - gestion-net
+
+volumes:
+  db-data:
+
+networks:
+  gestion-net:
+    driver: bridge
