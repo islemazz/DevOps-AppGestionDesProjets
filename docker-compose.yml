@@ -1,3 +1,5 @@
+name: gestion-app
+
 services:
 
   mysql:
