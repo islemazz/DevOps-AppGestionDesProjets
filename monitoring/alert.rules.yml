@@ -1,0 +1,36 @@
+groups:
+  - name: vm-hote
+    rules:
+      - alert: VMHighCPU
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+          tier: vm
+        annotations:
+          summary: 'CPU de la VM > 80% depuis 2 minutes'
+          description: 'Utilisation CPU actuelle : {{ printf "%.0f" $value }}%'
+
+  - name: jenkins
+    rules:
+      - alert: JenkinsNoFreeExecutor
+        expr: jenkins_executor_free_value == 0
+        for: 5m
+        labels:
+          severity: warning
+          tier: jenkins
+        annotations:
+          summary: 'Plus aucun executeur Jenkins disponible depuis 5 minutes'
+
+  - name: spring-boot
+    rules:
+      - alert: SpringBootHigh5xxRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="backend", status=~"5.."}[5m]))
+            / sum(rate(http_server_requests_seconds_count{application="backend"}[5m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          tier: spring-boot
+        annotations:
+          summary: 'Plus de 5% de reponses HTTP 5xx sur 5 minutes'
